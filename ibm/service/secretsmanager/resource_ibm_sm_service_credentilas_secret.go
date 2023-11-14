@@ -199,7 +199,7 @@ func ResourceIbmSmServiceCredentialsSecret() *schema.Resource {
 				MaxItems:    1,
 				Required:    true,
 				ForceNew:    true,
-				Description: "Determines whether Secrets Manager rotates your secrets automatically.",
+				Description: "The properties of the source service credentials secret payload.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"instance": &schema.Schema{
