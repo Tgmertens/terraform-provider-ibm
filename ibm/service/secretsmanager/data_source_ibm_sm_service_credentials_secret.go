@@ -42,15 +42,14 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 			},
 			"custom_metadata": &schema.Schema{
 				Type:        schema.TypeMap,
+				Optional:    true,
 				Computed:    true,
 				Description: "The secret metadata that a user can customize.",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.",
 			},
 			"downloaded": &schema.Schema{
@@ -60,11 +59,10 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 			},
 			"labels": &schema.Schema{
 				Type:        schema.TypeList,
+				Optional:    true,
 				Computed:    true,
 				Description: "Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"locks_total": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -79,9 +77,12 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 				RequiredWith: []string{"secret_group_name"},
 				Description:  "The human-readable name of your secret.",
 			},
+
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 				Description: "A v4 UUID identifier, or `default` secret group.",
 			},
 			"secret_group_name": &schema.Schema{
@@ -115,31 +116,45 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 				Computed:    true,
 				Description: "The number of versions of the secret.",
 			},
-			"ttl": &schema.Schema{
-				Type:        schema.TypeString,
+			"version_custom_metadata": &schema.Schema{
+				Type:        schema.TypeMap,
+				Optional:    true,
 				Computed:    true,
-				Description: "The time-to-live (TTL) or lease duration to assign to generated credentials. The value is specified in seconds.",
+				Description: "The secret version metadata that a user can customize.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"ttl": &schema.Schema{
+				Type:         schema.TypeString,
+				Computed:     true,
+				ValidateFunc: StringIsIntBetween(60, 7776000),
+				Description:  "The time-to-live (TTL) or lease duration to assign to generated credentials.",
 			},
 			"rotation": &schema.Schema{
 				Type:        schema.TypeList,
+				MaxItems:    1,
 				Computed:    true,
 				Description: "Determines whether Secrets Manager rotates your secrets automatically.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"auto_rotate": &schema.Schema{
 							Type:        schema.TypeBool,
+							Optional:    true,
 							Computed:    true,
-							Description: "Determines whether Secrets Manager rotates your secret automatically. Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
+							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
 						},
 						"interval": &schema.Schema{
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The length of the secret rotation time interval.",
+							Type:             schema.TypeInt,
+							Optional:         true,
+							Computed:         true,
+							Description:      "The length of the secret rotation time interval.",
+							DiffSuppressFunc: rotationAttributesDiffSuppress,
 						},
 						"unit": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The units for the secret rotation time interval.",
+							Type:             schema.TypeString,
+							Optional:         true,
+							Computed:         true,
+							Description:      "The units for the secret rotation time interval.",
+							DiffSuppressFunc: rotationAttributesDiffSuppress,
 						},
 					},
 				},
@@ -147,14 +162,195 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 			"next_rotation_date": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.",
+				Description: "The date that the secret is scheduled for automatic rotation. The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.",
+			},
+			"credentials": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The properties of the service credentials secret payload.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"apikey": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "The API key that is generated for this secret.",
+						},
+						"cos_hmac_keys": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The Cloud Object Storage HMAC keys that are returned after you create a service credentials secret.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"access_key_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The access key ID for Cloud Object Storage HMAC credentials.",
+									},
+									"secret_access_key": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The secret access key ID for Cloud Object Storage HMAC credentials.",
+									},
+								},
+							},
+						},
+						"endpoints": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The endpoints that are returned after you create a service credentials secret.",
+						},
+						"iam_apikey_description": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The description of the generated IAM API key.",
+						},
+						"iam_apikey_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the generated IAM API key.",
+						},
+						"iam_role_crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IAM role CRN that is returned after you create a service credentials secret.",
+						},
+						"iam_serviceid_crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IAM serviceId CRN that is returned after you create a service credentials secret.",
+						},
+						"resource_instance_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource instance CRN that is returned after you create a service credentials secret.",
+						},
+					},
+				},
+			},
+			"source_service": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Computed:    true,
+				Description: "Determines whether Secrets Manager rotates your secrets automatically.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"instance": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "A CRN that uniquely identifies a service credentials target.",
+									},
+								},
+							},
+						},
+						"role": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The role identifier for creating a service-id.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The role identifier for creating a service-id.",
+									},
+								},
+							},
+						},
+						"iam": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"apikey": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the generated IAM API key.",
+												},
+												"description": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The description of the generated IAM API key.",
+												},
+											},
+										},
+									},
+									"role": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The IAM role CRN that is returned after you create a service credentials secret.",
+												},
+											},
+										},
+									},
+									"serviceid": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The IAM serviceId CRN that is returned after you create a service credentials secret.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"resource_key": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource key CRN that is returned after you create a service credentials secret.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource key name that is returned after you create a service credentials secret.",
+									},
+								},
+							},
+						},
+						"parameters": &schema.Schema{
+							Type:        schema.TypeMap,
+							Computed:    true,
+							Description: "The collection of parameters for the service credentials target.",
+						},
+					},
+				},
 			},
 		},
 	}
 }
 
 func dataSourceIbmSmServiceCredentialsSecretRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	ServiceCredentialsSecretIntf, region, instanceId, diagError := getSecretByIdOrByName(context, d, meta, ServiceCredentialsSecretType)
 	if diagError != nil {
 		return diagError
@@ -199,6 +395,12 @@ func dataSourceIbmSmServiceCredentialsSecretRead(context context.Context, d *sch
 
 	if err = d.Set("downloaded", ServiceCredentialsSecret.Downloaded); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting downloaded: %s", err))
+	}
+
+	if ServiceCredentialsSecret.Labels != nil {
+		if err = d.Set("labels", ServiceCredentialsSecret.Labels); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting labels: %s", err))
+		}
 	}
 
 	if err = d.Set("locks_total", flex.IntValue(ServiceCredentialsSecret.LocksTotal)); err != nil {

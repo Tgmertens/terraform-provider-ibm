@@ -202,51 +202,158 @@ func ResourceIbmSmServiceCredentialsSecret() *schema.Resource {
 				Description: "Determines whether Secrets Manager rotates your secrets automatically.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"crn": &schema.Schema{
-							Type:        schema.TypeString,
+						"instance": &schema.Schema{
+							Type:        schema.TypeList,
 							Required:    true,
-							Description: "A CRN that uniquely identifies a service credentials target.",
+							MaxItems:    1,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "A CRN that uniquely identifies a service credentials target.",
+									},
+								},
+							},
 						},
-						"iam_apikey_description": &schema.Schema{
-							Type:        schema.TypeString,
+						//"crn": &schema.Schema{
+						//	Type:        schema.TypeString,
+						//	Required:    true,
+						//	Description: "A CRN that uniquely identifies a service credentials target.",
+						//},
+						"role": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
 							Computed:    true,
-							Description: "The description of the generated IAM API key.",
+							MaxItems:    1,
+							Description: "The role identifier for creating a service-id.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The role identifier for creating a service-id.",
+									},
+								},
+							},
 						},
-						"iam_apikey_name": &schema.Schema{
-							Type:        schema.TypeString,
+						//"role": &schema.Schema{
+						//	Type:        schema.TypeString,
+						//	Optional:    true,
+						//	Computed:    true,
+						//	Description: "The role identifier for creating a service-id.",
+						//},
+						"iam": &schema.Schema{
+							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The name of the generated IAM API key.",
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"apikey": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the generated IAM API key.",
+												},
+												"description": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The description of the generated IAM API key.",
+												},
+											},
+										},
+									},
+									"role": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The IAM role CRN that is returned after you create a service credentials secret.",
+												},
+											},
+										},
+									},
+									"serviceid": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The IAM serviceId CRN that is returned after you create a service credentials secret.",
+												},
+											},
+										},
+									},
+								},
+							},
 						},
-						"iam_role_crn": &schema.Schema{
-							Type:        schema.TypeString,
+						//"iam_apikey_description": &schema.Schema{
+						//	Type:        schema.TypeString,
+						//	Computed:    true,
+						//	Description: "The description of the generated IAM API key.",
+						//},
+						//"iam_apikey_name": &schema.Schema{
+						//	Type:        schema.TypeString,
+						//	Computed:    true,
+						//	Description: "The name of the generated IAM API key.",
+						//},
+						//"iam_role_crn": &schema.Schema{
+						//	Type:        schema.TypeString,
+						//	Computed:    true,
+						//	Description: "The IAM role CRN that is returned after you create a service credentials secret.",
+						//},
+						//"iam_serviceid_crn": &schema.Schema{
+						//	Type:        schema.TypeString,
+						//	Computed:    true,
+						//	Description: "The IAM serviceId CRN that is returned after you create a service credentials secret.",
+						//},
+						"resource_key": &schema.Schema{
+							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The IAM role CRN that is returned after you create a service credentials secret.",
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource key CRN that is returned after you create a service credentials secret.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource key name that is returned after you create a service credentials secret.",
+									},
+								},
+							},
 						},
-						"iam_serviceid_crn": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IAM serviceId CRN that is returned after you create a service credentials secret.",
-						},
-						"resource_key_crn": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The resource key CRN that is returned after you create a service credentials secret.",
-						},
-						"resource_key_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The resource key name that is returned after you create a service credentials secret.",
-						},
+						//"resource_key_crn": &schema.Schema{
+						//	Type:        schema.TypeString,
+						//	Computed:    true,
+						//	Description: "The resource key CRN that is returned after you create a service credentials secret.",
+						//},
+						//"resource_key_name": &schema.Schema{
+						//	Type:        schema.TypeString,
+						//	Computed:    true,
+						//	Description: "The resource key name that is returned after you create a service credentials secret.",
+						//},
 						"parameters": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
 							Description: "The collection of parameters for the service credentials target.",
-						},
-						"role": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The role identifier for creating a service-id.",
 						},
 					},
 				},
@@ -625,10 +732,31 @@ func resourceIbmSmServiceCredentialsSecretMapToRotationPolicy(modelMap map[strin
 }
 
 func resourceIbmSmServiceCredentialsSecretMapToSourceService(modelMap map[string]interface{}) (*secretsmanagerv2.ServiceCredentialsSecretSourceService, error) {
-	model := &secretsmanagerv2.ServiceCredentialsSecretSourceService{}
-	if modelMap["crn"] != nil && modelMap["crn"].(string) != "" {
-		model.Crn = core.StringPtr(modelMap["crn"].(string))
+	mainModel := &secretsmanagerv2.ServiceCredentialsSecretSourceService{}
+
+	if modelMap["instance"] != nil && len(modelMap["instance"].([]interface{})) > 0 {
+		instanceModel := &secretsmanagerv2.ServiceCredentialsSecretSourceServiceInstance{} // ?
+		if modelMap["instance"].([]interface{})[0].(map[string]interface{})["crn"].(string) != "" {
+			instanceModel.Crn = core.StringPtr(modelMap["instance"].([]interface{})[0].(map[string]interface{})["crn"].(string))
+			mainModel.Instance = instanceModel
+		}
 	}
+	//if modelMap["crn"] != nil && modelMap["crn"].(string) != "" {
+	//	model.Crn = core.StringPtr(modelMap["crn"].(string))
+	//}
+
+	if modelMap["role"] != nil && len(modelMap["role"].([]interface{})) > 0 {
+		roleModel := &secretsmanagerv2.ServiceCredentialsSecretSourceServiceRole{} // ?
+		if modelMap["role"].([]interface{})[0].(map[string]interface{})["crn"].(string) != "" {
+			roleModel.Crn = core.StringPtr(modelMap["role"].([]interface{})[0].(map[string]interface{})["crn"].(string))
+			mainModel.Role = roleModel
+		}
+	}
+
+	//if modelMap["role"] != nil && modelMap["role"].(string) != "" {
+	//	model.Role = core.StringPtr(modelMap["role"].(string))
+	//}
+
 	if modelMap["parameters"] != nil {
 		model.Parameters = &secretsmanagerv2.ServiceCredentialsParameters{}
 		parametersMap := modelMap["parameters"].(map[string]interface{})
@@ -643,9 +771,6 @@ func resourceIbmSmServiceCredentialsSecretMapToSourceService(modelMap map[string
 				model.Parameters.SetProperty(k, v)
 			}
 		}
-	}
-	if modelMap["role"] != nil && modelMap["role"].(string) != "" {
-		model.Role = core.StringPtr(modelMap["role"].(string))
 	}
 	return model, nil
 }
@@ -666,13 +791,102 @@ func resourceIbmSmServiceCredentialsSecretRotationPolicyToMap(modelIntf secretsm
 }
 
 func resourceIbmSmServiceCredentialsSecretSourceServiceToMap(sourceService *secretsmanagerv2.ServiceCredentialsSecretSourceService) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if sourceService.Crn != nil {
-		modelMap["crn"] = sourceService.Crn
+	mainModelMap := make(map[string]interface{})
+	if sourceService.Instance != nil {
+		instanceMap := make(map[string]interface{})
+		instanceModel := sourceService.Instance[0]
+		if instanceModel.Crn != nil {
+			instanceMap["crn"] = instanceModel.Crn
+		}
+		mainModelMap["instance"] = instanceMap
 	}
+	//if sourceService.Crn != nil {
+	//	modelMap["crn"] = sourceService.Crn
+	//}
+
 	if sourceService.Role != nil {
-		modelMap["role"] = sourceService.Role
+		roleMap := make(map[string]interface{})
+		roleModel := sourceService.Role[0]
+		if roleModel.Crn != nil {
+			roleMap["crn"] = roleModel.Crn
+		}
+		mainModelMap["role"] = roleMap
 	}
+	//if sourceService.Role != nil {
+	//	modelMap["role"] = sourceService.Role
+	//}
+
+	if sourceService.Iam != nil {
+		iamMap := make(map[string]interface{})
+		iamModel := sourceService.Iam[0]
+
+		// apikey
+		if iamModel.Apikey != nil {
+			iamApikeyMap := make(map[string]interface{})
+			iamApikeyModel := iamModel.Apikey[0]
+			if iamApikeyModel.Name != nil {
+				iamApikeyMap["name"] = iamApikeyModel.Name
+			}
+			if iamApikeyModel.Description != nil {
+				iamApikeyMap["description"] = iamApikeyModel.Description
+			}
+			iamMap["apikey"] = iamApikeyMap
+		}
+
+		// role
+		if iamModel.Role != nil {
+			iamRoleMap := make(map[string]interface{})
+			iamRoleModel := iamModel.Role[0]
+			if iamRoleModel.Crn != nil {
+				iamRoleMap["crn"] = iamRoleModel.Crn
+			}
+			iamMap["role"] = iamRoleMap
+		}
+
+		// service id
+		if iamModel.Serviceid != nil {
+			iamServiceidMap := make(map[string]interface{})
+			iamServiceidModel := iamModel.Serviceid[0]
+			if iamServiceidModel.Crn != nil {
+				iamServiceidMap["crn"] = iamServiceidModel.Crn
+			}
+			iamMap["serviceid"] = iamServiceidMap
+		}
+
+		mainModelMap["iam"] = iamMap
+
+	}
+	//if sourceService.IamApikeyDescription != nil {
+	//	modelMap["iam_apikey_description"] = sourceService.IamApikeyDescription
+	//}
+	//if sourceService.IamApikeyName != nil {
+	//	modelMap["iam_apikey_name"] = sourceService.IamApikeyName
+	//}
+	//if sourceService.IamRoleCrn != nil {
+	//	modelMap["iam_role_crn"] = sourceService.IamRoleCrn
+	//}
+	//if sourceService.IamServiceidCrn != nil {
+	//	modelMap["iam_serviceid_crn"] = sourceService.IamServiceidCrn
+	//}
+
+	if sourceService.ResourceKey != nil {
+		resourceKeyMap := make(map[string]interface{})
+		resourceKeyModel := sourceService.ResourceKey[0]
+		if resourceKeyModel.Crn != nil {
+			resourceKeyMap["crn"] = resourceKeyModel.Crn
+		}
+		if resourceKeyModel.Name != nil {
+			resourceKeyMap["name"] = resourceKeyModel.Name
+		}
+		mainModelMap["resource_key"] = resourceKeyMap
+	}
+	//if sourceService.ResourceKeyCrn != nil {
+	//	modelMap["resource_key_crn"] = sourceService.ResourceKeyCrn
+	//}
+	//if sourceService.ResourceKeyName != nil {
+	//	modelMap["resource_key_name"] = sourceService.ResourceKeyName
+	//}
+
 	if sourceService.Parameters != nil {
 		parametersMap := sourceService.Parameters.GetProperties()
 		for k, v := range parametersMap {
@@ -681,27 +895,10 @@ func resourceIbmSmServiceCredentialsSecretSourceServiceToMap(sourceService *secr
 		if sourceService.Parameters.ServiceidCrn != nil {
 			parametersMap["serviceid_crn"] = sourceService.Parameters.ServiceidCrn
 		}
-		modelMap["parameters"] = parametersMap
+		mainModelMap["parameters"] = parametersMap
 	}
-	if sourceService.IamApikeyDescription != nil {
-		modelMap["iam_apikey_description"] = sourceService.IamApikeyDescription
-	}
-	if sourceService.IamApikeyName != nil {
-		modelMap["iam_apikey_name"] = sourceService.IamApikeyName
-	}
-	if sourceService.IamRoleCrn != nil {
-		modelMap["iam_role_crn"] = sourceService.IamRoleCrn
-	}
-	if sourceService.IamServiceidCrn != nil {
-		modelMap["iam_serviceid_crn"] = sourceService.IamServiceidCrn
-	}
-	if sourceService.ResourceKeyCrn != nil {
-		modelMap["resource_key_crn"] = sourceService.ResourceKeyCrn
-	}
-	if sourceService.ResourceKeyName != nil {
-		modelMap["resource_key_name"] = sourceService.ResourceKeyName
-	}
-	return modelMap, nil
+
+	return mainModelMap, nil
 }
 
 func resourceIbmSmServiceCredentialsSecretCredentialsToMap(credentials *secretsmanagerv2.ServiceCredentialsSecretCredentials) (map[string]interface{}, error) {
