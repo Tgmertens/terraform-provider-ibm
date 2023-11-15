@@ -6,11 +6,10 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
@@ -42,14 +41,13 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 			},
 			"custom_metadata": &schema.Schema{
 				Type:        schema.TypeMap,
-				Optional:    true,
 				Computed:    true,
 				Description: "The secret metadata that a user can customize.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.",
 			},
 			"downloaded": &schema.Schema{
@@ -59,7 +57,6 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 			},
 			"labels": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
 				Computed:    true,
 				Description: "Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -80,7 +77,6 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				ForceNew:    true,
 				Description: "A v4 UUID identifier, or `default` secret group.",
@@ -116,45 +112,31 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 				Computed:    true,
 				Description: "The number of versions of the secret.",
 			},
-			"version_custom_metadata": &schema.Schema{
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Computed:    true,
-				Description: "The secret version metadata that a user can customize.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
 			"ttl": &schema.Schema{
-				Type:         schema.TypeString,
-				Computed:     true,
-				ValidateFunc: StringIsIntBetween(60, 7776000),
-				Description:  "The time-to-live (TTL) or lease duration to assign to generated credentials.",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The time-to-live (TTL) or lease duration to assign to generated credentials.",
 			},
 			"rotation": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "Determines whether Secrets Manager rotates your secrets automatically.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"auto_rotate": &schema.Schema{
 							Type:        schema.TypeBool,
-							Optional:    true,
 							Computed:    true,
 							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
 						},
 						"interval": &schema.Schema{
-							Type:             schema.TypeInt,
-							Optional:         true,
-							Computed:         true,
-							Description:      "The length of the secret rotation time interval.",
-							DiffSuppressFunc: rotationAttributesDiffSuppress,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The length of the secret rotation time interval.",
 						},
 						"unit": &schema.Schema{
-							Type:             schema.TypeString,
-							Optional:         true,
-							Computed:         true,
-							Description:      "The units for the secret rotation time interval.",
-							DiffSuppressFunc: rotationAttributesDiffSuppress,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The units for the secret rotation time interval.",
 						},
 					},
 				},
@@ -230,20 +212,19 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 			},
 			"source_service": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
-				Description: "The properties of the source service credentials secret payload.",
+				Description: "The properties required for creating the service credentials for the specified source service instance.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"instance": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "",
+							Description: "The source service instance identifier.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"crn": &schema.Schema{
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "A CRN that uniquely identifies a service credentials target.",
 									},
 								},
@@ -252,13 +233,13 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 						"role": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The role identifier for creating a service-id.",
+							Description: "The service-specific custom role object, CRN role is accepted. Refer to the service’s documentation for supported roles.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The role identifier for creating a service-id.",
+										Description: "The CRN role identifier for creating a service-id.",
 									},
 								},
 							},
@@ -266,24 +247,24 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 						"iam": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "",
+							Description: "The source service IAM data is returned in case IAM credentials where created for this secret.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"apikey": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "",
+										Description: "The IAM apikey metadata for the IAM credentials that were generated.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "The name of the generated IAM API key.",
+													Description: "The IAM API key name for the generated service credentials.",
 												},
 												"description": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "The description of the generated IAM API key.",
+													Description: "The IAM API key description for the generated service credentials.",
 												},
 											},
 										},
@@ -291,13 +272,13 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 									"role": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "",
+										Description: "The IAM role for the generate service credentials.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"crn": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "The IAM role CRN that is returned after you create a service credentials secret.",
+													Description: "The IAM role CRN assigned to the generated service credentials.",
 												},
 											},
 										},
@@ -305,13 +286,13 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 									"serviceid": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "",
+										Description: "The IAM serviceid for the generated service credentials.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"crn": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "The IAM serviceId CRN that is returned after you create a service credentials secret.",
+													Description: "The IAM Service ID CRN.",
 												},
 											},
 										},
@@ -322,18 +303,18 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 						"resource_key": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "",
+							Description: "The source service resource key data of the generated service credentials.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The resource key CRN that is returned after you create a service credentials secret.",
+										Description: "The resource key CRN of the generated service credentials.",
 									},
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The resource key name that is returned after you create a service credentials secret.",
+										Description: "The resource key name of the generated service credentials.",
 									},
 								},
 							},
@@ -441,7 +422,7 @@ func dataSourceIbmSmServiceCredentialsSecretRead(context context.Context, d *sch
 
 	rotation := []map[string]interface{}{}
 	if ServiceCredentialsSecret.Rotation != nil {
-		modelMap, err := dataSourceIbmSmServiceCredentialsSecretRotationPolicyToMap(ServiceCredentialsSecret.Rotation.(*secretsmanagerv2.CommonRotationPolicy))
+		modelMap, err := dataSourceIbmSmServiceCredentialsSecretRotationPolicyToMap(ServiceCredentialsSecret.Rotation.(*secretsmanagerv2.RotationPolicy))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -455,10 +436,32 @@ func dataSourceIbmSmServiceCredentialsSecretRead(context context.Context, d *sch
 		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
 	}
 
+	if ServiceCredentialsSecret.Credentials != nil {
+		credentialsMap, err := dataSourceIbmSmServiceCredentialsSecretCredentialsToMap(ServiceCredentialsSecret.Credentials)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(credentialsMap) > 0 {
+			if err = d.Set("credentials", []map[string]interface{}{credentialsMap}); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting credentialsMap: %s", err))
+			}
+		}
+	}
+
+	sourceServiceMap, err := dataSourceIbmSmServiceCredentialsSecretSourceServiceToMap(ServiceCredentialsSecret.SourceService)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if len(sourceServiceMap) > 0 {
+		if err = d.Set("source_service", []map[string]interface{}{sourceServiceMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting source_service: %s", err))
+		}
+	}
+
 	return nil
 }
 
-func dataSourceIbmSmServiceCredentialsSecretRotationPolicyToMap(model *secretsmanagerv2.CommonRotationPolicy) (map[string]interface{}, error) {
+func dataSourceIbmSmServiceCredentialsSecretRotationPolicyToMap(model *secretsmanagerv2.RotationPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AutoRotate != nil {
 		modelMap["auto_rotate"] = *model.AutoRotate
@@ -470,4 +473,129 @@ func dataSourceIbmSmServiceCredentialsSecretRotationPolicyToMap(model *secretsma
 		modelMap["unit"] = *model.Unit
 	}
 	return modelMap, nil
+}
+
+func dataSourceIbmSmServiceCredentialsSecretCredentialsToMap(credentials *secretsmanagerv2.ServiceCredentialsSecretCredentials) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if credentials.IamApikeyDescription != nil {
+		modelMap["iam_apikey_description"] = credentials.IamApikeyDescription
+	}
+	if credentials.Apikey != nil {
+		modelMap["apikey"] = credentials.Apikey
+	}
+	if credentials.Endpoints != nil {
+		modelMap["endpoints"] = credentials.Endpoints
+	}
+	if credentials.IamApikeyName != nil {
+		modelMap["iam_apikey_name"] = credentials.IamApikeyName
+	}
+	if credentials.IamRoleCrn != nil {
+		modelMap["iam_role_crn"] = credentials.IamRoleCrn
+	}
+	if credentials.IamServiceidCrn != nil {
+		modelMap["iam_serviceid_crn"] = credentials.IamServiceidCrn
+	}
+	if credentials.ResourceInstanceID != nil {
+		modelMap["resource_instance_id"] = credentials.ResourceInstanceID
+	}
+	if credentials.CosHmacKeys != nil {
+		cosHmacKeys := [1]map[string]interface{}{}
+		m := map[string]interface{}{}
+		if credentials.CosHmacKeys.AccessKeyID != nil {
+			m["access_key_id"] = credentials.CosHmacKeys.AccessKeyID
+		}
+		if credentials.CosHmacKeys.SecretAccessKey != nil {
+			m["secret_access_key"] = credentials.CosHmacKeys.SecretAccessKey
+		}
+		cosHmacKeys[0] = m
+		modelMap["cos_hmac_keys"] = cosHmacKeys
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmSmServiceCredentialsSecretSourceServiceToMap(sourceService *secretsmanagerv2.ServiceCredentialsSecretSourceService) (map[string]interface{}, error) {
+	mainModelMap := make(map[string]interface{})
+	if sourceService.Instance != nil {
+		instanceMap := make(map[string]interface{})
+		instanceModel := sourceService.Instance
+		if instanceModel.Crn != nil {
+			instanceMap["crn"] = instanceModel.Crn
+		}
+		mainModelMap["instance"] = []map[string]interface{}{instanceMap}
+	}
+
+	if sourceService.Role != nil {
+		roleMap := make(map[string]interface{})
+		roleModel := sourceService.Role
+		if roleModel.Crn != nil {
+			roleMap["crn"] = roleModel.Crn
+		}
+		mainModelMap["role"] = []map[string]interface{}{roleMap}
+	}
+
+	if sourceService.Iam != nil {
+		iamMap := make(map[string]interface{})
+		iamModel := sourceService.Iam
+
+		// apikey
+		if iamModel.Apikey != nil {
+			iamApikeyMap := make(map[string]interface{})
+			iamApikeyModel := iamModel.Apikey
+			if iamApikeyModel.Name != nil {
+				iamApikeyMap["name"] = iamApikeyModel.Name
+			}
+			if iamApikeyModel.Description != nil {
+				iamApikeyMap["description"] = iamApikeyModel.Description
+			}
+			iamMap["apikey"] = []map[string]interface{}{iamApikeyMap}
+		}
+
+		// role
+		if iamModel.Role != nil {
+			iamRoleMap := make(map[string]interface{})
+			iamRoleModel := iamModel.Role
+			if iamRoleModel.Crn != nil {
+				iamRoleMap["crn"] = iamRoleModel.Crn
+			}
+			iamMap["role"] = []map[string]interface{}{iamRoleMap}
+		}
+
+		// service id
+		if iamModel.Serviceid != nil {
+			iamServiceidMap := make(map[string]interface{})
+			iamServiceidModel := iamModel.Serviceid
+			if iamServiceidModel.Crn != nil {
+				iamServiceidMap["crn"] = iamServiceidModel.Crn
+			}
+			iamMap["serviceid"] = []map[string]interface{}{iamServiceidMap}
+		}
+
+		mainModelMap["iam"] = []map[string]interface{}{iamMap}
+
+	}
+
+	if sourceService.ResourceKey != nil {
+		resourceKeyMap := make(map[string]interface{})
+		resourceKeyModel := sourceService.ResourceKey
+		if resourceKeyModel.Crn != nil {
+			resourceKeyMap["crn"] = resourceKeyModel.Crn
+		}
+		if resourceKeyModel.Name != nil {
+			resourceKeyMap["name"] = resourceKeyModel.Name
+		}
+		mainModelMap["resource_key"] = []map[string]interface{}{resourceKeyMap}
+	}
+
+	if sourceService.Parameters != nil {
+		parametersMap := sourceService.Parameters.GetProperties()
+		for k, v := range parametersMap {
+			parametersMap[k] = fmt.Sprint(v)
+		}
+		if sourceService.Parameters.ServiceidCrn != nil {
+			parametersMap["serviceid_crn"] = sourceService.Parameters.ServiceidCrn
+		}
+		mainModelMap["parameters"] = parametersMap
+	}
+
+	return mainModelMap, nil
 }
