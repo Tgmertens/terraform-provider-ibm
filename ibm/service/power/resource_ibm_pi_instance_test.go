@@ -660,6 +660,8 @@ func TestAccIBMPIInstanceDeploymentTypeNoStorage(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_deployment_type", "VMNoStorage"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_sys_type", "s922"),
 				),
 			},
 		},
